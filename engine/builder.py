@@ -66,7 +66,7 @@ def cover_html(ctx, cfg):
     if "hook" in ctx.uses:
         lg.append('<span class="hand">✎ 覚え方メモ</span>')
     legend = f'<div class="legend">{"".join(lg)}</div>' if lg else ""
-    return f'<header class="cover">{eyebrow}<h1>{esc(title)}{tag}</h1>{lead}{legend}</header>'
+    return f'<header class="cover">{eyebrow}<h1><span class="t">{esc(title)}</span>{tag}</h1>{lead}{legend}</header>'
 
 def toc_html(ctx):
     pg = ""

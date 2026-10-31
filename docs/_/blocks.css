@@ -4,8 +4,10 @@
 /* ───── cover ───── */
 .cover{padding-block:40px 18px}
 .cover .eyebrow{font-size:var(--fs-0); letter-spacing:.18em; color:var(--ink-3)}
-.cover h1{font-family:var(--f-hand); font-weight:600; font-size:clamp(34px, 7vw, 56px); line-height:1.15; margin:.25em 0 .2em; letter-spacing:.02em; text-wrap:balance}
-.cover h1 .k{color:var(--ink-3); font-size:.5em; vertical-align:.5em; margin-left:.3em; letter-spacing:0}
+/* タイトルとサブタイトル（tag）はベースライン（文字の下端）でそろえる。幅が足りないときは tag ごと次の行へ回し、タイトルの途中では折らない */
+.cover h1{display:flex; flex-wrap:wrap; align-items:baseline; gap:.15em .5em; font-family:var(--f-hand); font-weight:600; font-size:clamp(34px, 7vw, 56px); line-height:1.15; margin:.25em 0 .2em; letter-spacing:.02em}
+.cover h1 .t{text-wrap:balance}
+.cover h1 .k{color:var(--ink-3); font-size:.5em; letter-spacing:0}
 .cover .lead{max-width:62ch; color:var(--ink-2); font-size:var(--fs-2); margin:0}
 .legend{display:flex; flex-wrap:wrap; gap:8px 18px; margin:18px 0 6px; font-size:var(--fs-1); color:var(--ink-2)}
 .legend span{display:inline-flex; align-items:center; gap:7px}
