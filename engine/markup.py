@@ -139,11 +139,15 @@ class Builder:
         """dense が3つ以上続いた所だけ2段組にする。文章・数式・図は1段のまま"""
         res, run = [], []
         def close_run():
+            # 小見出しが段組みの最後に取り残されると、中身と離れて右下に浮く → 段組みの外に出して次の中身の頭に付ける
+            tail = run.pop() if run and run[-1].startswith('<div class="sec">') else None
             if len(run) >= 3:
                 res.append('<div class="cols">' + "".join(run) + "</div>")
             else:
                 res.extend(run)
             run.clear()
+            if tail:
+                res.append(tail)
         for kind, h in self.blocks:
             if kind == DENSE:
                 run.append(h)
