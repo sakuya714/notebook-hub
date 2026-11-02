@@ -184,11 +184,38 @@ flow: 7層に分担::OSI > 同じLAN内で届ける::MAC・CSMA・スイッチ >
 )
 
 ## 層ごとのよく出るプロトコル
-| 層 | よく出るプロトコル |
-| 7 アプリケーション | HTTP・SMTP・POP3・IMAP・FTP・DNS・DHCP・SNMP・NTP・SSH |
-| 4 トランスポート | TCP・UDP |
-+| 3 ネットワーク | IP・ICMP・ARP・RARP・IPsec・RIP・OSPF・BGP・VRRP |
-| 2 データリンク | イーサネット・PPP・VLAN・スパニングツリー（STP） |
+> 層の番号より「そのプロトコルが何をするか」で選ぶ方が点になる。出るのはほぼ7・4・3・2層で、5・6層はほぼ出ない
+( 7層 アプリケーション層 ──「〇〇するための約束」系
+- HTTP — Webページの送受信（HyperText Transfer Protocol）
+-* SMTP — メールの**送信**・転送（Simple Mail Transfer Protocol）
+- POP3 — メールの**受信**。端末にダウンロード（Post Office Protocol version 3）
+- IMAP — メールの**受信**。サーバ上で管理（Internet Message Access Protocol）
+- FTP — ファイル転送（File Transfer Protocol）
+- DNS — ドメイン名 → IPアドレスに変換（Domain Name System）
+-* DHCP — IPアドレスを**自動で割り当てる**（Dynamic Host Configuration Protocol）
++* SNMP — ネットワーク機器の**監視・管理**（Simple Network Management Protocol）
++ NTP — **時刻合わせ**（Network Time Protocol）
+- SSH — 暗号化した**遠隔操作**（Secure Shell）
+)
+( 4層 トランスポート層 ── 2つだけ
+-* TCP — 確認しながら送る。**確実だけど遅い**（Web・メール向き）（Transmission Control Protocol）
+-* UDP — 送りっぱなし。**速いけど不確実**（動画・通話・DNS向き）（User Datagram Protocol）
+)
+( 3層 ネットワーク層 ── IP・経路・ルータ系
+- IP — IPアドレスで宛先へ届ける（Internet Protocol）
+- ICMP — エラー通知・疎通確認。**ping**で使う（Internet Control Message Protocol）
+-* ARP — **IP → MAC**を調べる（Address Resolution Protocol）
+- RARP — その逆。**MAC → IP**を調べる（Reverse ARP）
++* IPsec — IP通信を暗号化。**VPN**で使う（IP Security）
++* RIP・OSPF・BGP — ルータ同士で**経路情報を交換**する
++* VRRP — **複数のルータを1台に見せて冗長化**。1台が故障しても予備が引き継ぐ（Virtual Router Redundancy Protocol）
+)
+( 2層 データリンク層 ── MAC・隣の機器系
+- イーサネット — 有線LANの規格。CSMA/CDはここ（Ethernet）
++ PPP — **2点間**をつなぐ。昔のダイヤルアップ（Point-to-Point Protocol）
++ VLAN — 1台のスイッチを**論理的に分割**する（Virtual LAN）
++* STP — スイッチ間の**ループを防ぐ**（Spanning Tree Protocol）
+)
 ( キーワードで選ぶ
 +* 冗長化・予備・切り替え（フェールオーバー） — VRRP
 +* 監視・管理 — SNMP
@@ -197,7 +224,7 @@ flow: 7層に分担::OSI > 同じLAN内で届ける::MAC・CSMA・スイッチ >
 + ループ防止 — スパニングツリー（STP）
 + 2点間をつなぐ — PPP
 )
-> 層の番号より「そのプロトコルが何をするか」で選ぶ方が点になる。出るのはほぼ7・4・3・2層で、5・6層はほぼ出ない。1つずつの説明は {{03-4}}（IPsecは {{03-5}}）
+> 問題文のキーワードから、単語の意味で選ぶ。もっと細かい試験ポイント（DHCPの送信元0.0.0.0、DNSレコード、RIPとOSPFの違いなど）は {{03-4}}、IPsecは {{03-5}}
 
 ## LANの送り方
 (
