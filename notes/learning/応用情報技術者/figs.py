@@ -59,7 +59,7 @@ def hufftree():
         b += text((x1 + x2) / 2 + (-9 if bit == "0" else 6), (y1 + y2) / 2 + 2, bit, "t-s f-ou")
     for k, (x, y, s) in nodes.items():
         leaf = k in "abcd"
-        b += f'<rect x="{x-24}" y="{y-10}" width="48" height="20" rx="10" class="{"f-sheet3" if leaf else "f-bg"}" stroke="var(--line)"/>'
+        b += f'<rect x="{x-24}" y="{y-10}" width="48" height="20" rx="10" class="{"f-sheet3" if leaf else "f-bg"} st-line"/>'
         b += text(x, y + 4, s, "t-s f-ink" if leaf else "t-s f-ink3", "middle")
     b += text(16, 140, "a=0  b=10", "t-m f-ink2 mono")
     b += text(16, 158, "c=110  d=111", "t-m f-ink2 mono")
@@ -74,7 +74,7 @@ def traversal():
     for a, c in edges:
         b += f'<line x1="{pos[a][0]}" y1="{pos[a][1]}" x2="{pos[c][0]}" y2="{pos[c][1]}" class="s-ax"/>'
     for k, (x, y) in pos.items():
-        b += f'<circle cx="{x}" cy="{y}" r="12" class="f-sheet3" stroke="var(--line)"/>' + text(x, y + 4, str(k), "t-m f-ink", "middle")
+        b += f'<circle cx="{x}" cy="{y}" r="12" class="f-sheet3 st-line"/>' + text(x, y + 4, str(k), "t-m f-ink", "middle")
     rows = [("行きがけ 節→左→右", "1 2 4 5 3 6"), ("通りがけ 左→節→右", "4 2 5 1 3 6"), ("帰りがけ 左→右→節", "4 5 2 6 3 1"), ("幅優先（キュー）", "1 2 3 4 5 6")]
     for i, (n, s) in enumerate(rows):
         y = 160 + i * 17
@@ -83,48 +83,29 @@ def traversal():
 
 # ───────────────────────── 02-1 ─────────────────────────
 def pipeline():
-    st = ["F", "D", "R", "E"]
-    rows = ""
-    for i in range(5):
-        cells = "".join(
-            f'<td class="{"on" if i <= j < i+4 else ""}">{st[j-i] if i <= j < i+4 else ""}</td>' for j in range(8))
-        rows += f"<tr><th>命令{i+1}</th>{cells}</tr>"
-    head = "<tr><th></th>" + "".join(f"<th>{j+1}</th>" for j in range(8)) + "</tr>"
-    css = ('<style>.pp{border-collapse:separate;border-spacing:3px;font-family:var(--f-mono);font-size:11px;margin:0 auto}'
-           '.pp th{color:var(--ink-3);font-weight:400;padding:0 4px}.pp td{width:26px;height:22px;text-align:center;border-radius:4px;color:var(--bg)}'
-           '.pp td.on{background:var(--kihon)}.pp tr:nth-child(2) td.on{background:var(--ou)}</style>')
-    return css + f'<table class="pp">{head}{rows}</table>'
+    return timing([f"命令{i + 1}" for i in range(5)], 8, [(i, ["F", "D", "R", "E"]) for i in range(5)], hot_row=0)
 
 def memhier():
-    return ('<div class="stack">'
-            '<div class="r"><b>レジスタ</b><span>CPUの中</span></div>'
-            '<div class="r"><b>キャッシュ（SRAM）</b><span>L1→L2→L3</span></div>'
-            '<div class="r"><b>主記憶（DRAM）</b><span>リフレッシュ要</span></div>'
-            '<div class="r"><b>SSD（NANDフラッシュ）／HDD</b><span>補助記憶</span></div>'
-            '</div><div class="cap" style="display:flex;justify-content:space-between"><span>↑ 速い・小さい・高い</span><span>遅い・大きい・安い ↓</span></div>')
+    return (stack([("レジスタ", "CPUの中", 0), ("キャッシュ（SRAM）", "L1→L2→L3", 0), ("主記憶（DRAM）", "リフレッシュ要", 0), ("SSD（NANDフラッシュ）／HDD", "補助記憶", 0)])
+            + ends("↑ 速い・小さい・高い", "遅い・大きい・安い ↓"))
 
 # ───────────────────────── 02-2 ─────────────────────────
 def availability():
-    box = lambda s: f'<span style="display:inline-block;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--sheet-3);font-family:var(--f-mono);font-size:12px">{s}</span>'
-    line = '<span style="display:inline-block;width:14px;height:1.5px;background:var(--ink-3);vertical-align:middle"></span>'
-    ser = f'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">{line}{box("0.9")}{line}{box("0.8")}{line}<span style="margin-left:10px;font-family:var(--f-mono);font-size:12px">直列 ＝ 0.9×0.8 ＝ <b class="hl">0.72</b></span></div>'
-    par = (f'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">'
-           f'<span style="display:inline-flex;flex-direction:column;gap:4px;border-left:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);padding:0 8px">{box("0.9")}{box("0.8")}</span>'
-           f'<span style="font-family:var(--f-mono);font-size:12px">並列 ＝ 1−(1−0.9)(1−0.8) ＝ <b class="hl">0.98</b></span></div>')
-    return ser + par
+    # 直列は掛け算、並列は「全部止まる」を1から引く
+    def box(x, y, v):
+        return f'<rect x="{x}" y="{y}" width="44" height="22" rx="6" class="f-sheet3 st-line"/>' + text(x + 22, y + 15, v, "t-m f-ink mono", "middle")
+    b = f'<line x1="0" y1="21" x2="14" y2="21" class="s-ax"/>' + box(14, 10, "0.9") + f'<line x1="58" y1="21" x2="76" y2="21" class="s-ax"/>' + box(76, 10, "0.8")
+    b += f'<line x1="120" y1="21" x2="134" y2="21" class="s-ax"/>' + text(146, 25, "直列 ＝ 0.9×0.8 ＝ ", "t-m f-ink mono") + text(286, 25, "0.72", "t-m f-ou mono")
+    b += f'<path d="M14,58 L14,94 M58,58 L58,94 M0,76 L14,76 M58,76 L72,76" class="s-ax"/>' + box(14, 47, "0.9") + box(14, 83, "0.8")
+    b += text(86, 80, "並列 ＝ 1−(1−0.9)(1−0.8) ＝ ", "t-m f-ink mono") + text(296, 80, "0.98", "t-m f-ou mono")
+    return svg(460, 110, b, "直列と並列の稼働率")
 
 def raid():
-    def disk(name, cells, hot=None):
-        cs = "".join(f'<div style="height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;'
-                     f'background:{"var(--ou)" if c=="P" else "var(--sheet-3)"};color:{"var(--bg)" if c=="P" else "var(--ink)"}">{c}</div>' for c in cells)
-        return f'<div style="display:flex;flex-direction:column;gap:3px;width:34px"><div style="font-size:10px;color:var(--ink-3);text-align:center">{name}</div>{cs}</div>'
-    def grp(title, sub, disks):
-        return (f'<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="font-size:12px;font-weight:700">{title}</div>'
-                f'<div style="display:flex;gap:4px">{"".join(disks)}</div><div style="font-size:11px;color:var(--ink-3)">{sub}</div></div>')
-    g0 = grp("RAID0", "ストライピング<br>速い・冗長なし", [disk("A", ["1", "3", "5"]), disk("B", ["2", "4", "6"])])
-    g1 = grp("RAID1", "ミラーリング<br>容量1/2・1台壊れてもOK", [disk("A", ["1", "2", "3"]), disk("B", ["1", "2", "3"])])
-    g5 = grp("RAID5", "パリティ分散<br>1台までOK・容量(n−1)台分", [disk("A", ["1", "3", "P"]), disk("B", ["2", "P", "5"]), disk("C", ["P", "4", "6"])])
-    return f'<div style="display:flex;flex-wrap:wrap;gap:18px 26px">{g0}{g1}{g5}</div>'
+    g0 = column("RAID0", [hrow(cellcol("A", ["1", "3", "5"]), cellcol("B", ["2", "4", "6"]))], sub="ストライピング<br>速い・冗長なし")
+    g1 = column("RAID1", [hrow(cellcol("A", ["1", "2", "3"]), cellcol("B", ["1", "2", "3"]))], sub="ミラーリング<br>容量1/2・1台壊れてもOK")
+    g5 = column("RAID5", [hrow(cellcol("A", ["1", "3", "P"], "P"), cellcol("B", ["2", "P", "5"], "P"), cellcol("C", ["P", "4", "6"], "P"))],
+                sub="パリティ分散<br>1台までOK・容量(n−1)台分")
+    return columns(g0, g1, g5)
 
 def bathtub():
     X0, X1, Y0, Y1 = 30, 340, 140, 20
@@ -148,19 +129,17 @@ def bathtub():
 
 def virt():
     def col(title, layers, note):
-        ls = "".join(f'<div style="background:{"var(--ou-bg)" if hi else "var(--sheet-3)"};border-radius:4px;padding:3px 6px;font-size:11px;text-align:center;{"color:var(--ou-2);font-weight:700" if hi else ""}">{s}</div>' for s, hi in layers)
-        return f'<div style="flex:1 1 100px;min-width:96px;display:flex;flex-direction:column;gap:3px"><div style="font-size:12px;font-weight:700;text-align:center">{title}</div>{ls}<div style="font-size:11px;color:var(--ink-3);text-align:center">{note}</div></div>'
-    a = col("ホスト型", [("アプリ", 0), ("ゲストOS", 0), ("仮想化ソフト", 1), ("ホストOS", 0), ("HW", 0)], "作りやすい・遅い")
-    b = col("ハイパバイザ型", [("アプリ", 0), ("ゲストOS", 0), ("ハイパバイザ", 1), ("HW", 0)], "ホストOSなし・速い")
-    c = col("コンテナ型", [("アプリ", 0), ("コンテナ", 1), ("コンテナエンジン", 0), ("ホストOS", 0), ("HW", 0)], "ゲストOSなし・軽い")
-    return f'<div style="display:flex;gap:10px;flex-wrap:wrap">{a}{b}{c}</div>'
+        return column(title, [tile(name, tone="s o" if hot else "s") for name, hot in layers], sub=note, center=True)
+    return columns(col("ホスト型", [("アプリ", 0), ("ゲストOS", 0), ("仮想化ソフト", 1), ("ホストOS", 0), ("HW", 0)], "作りやすい・遅い"),
+                   col("ハイパバイザ型", [("アプリ", 0), ("ゲストOS", 0), ("ハイパバイザ", 1), ("HW", 0)], "ホストOSなし・速い"),
+                   col("コンテナ型", [("アプリ", 0), ("コンテナ", 1), ("コンテナエンジン", 0), ("ホストOS", 0), ("HW", 0)], "ゲストOSなし・軽い"))
 
 # ───────────────────────── 02-3 ─────────────────────────
 def taskstate():
     R, U, W = (70, 90), (290, 40), (290, 150)
     b = arrow_defs("ts")
     def node(p, s, sub):
-        return (f'<rect x="{p[0]-46}" y="{p[1]-17}" width="92" height="34" rx="17" class="f-sheet3" stroke="var(--line)"/>'
+        return (f'<rect x="{p[0]-46}" y="{p[1]-17}" width="92" height="34" rx="17" class="f-sheet3 st-line"/>'
                 + text(p[0], p[1] - 1, s, "t-m f-ink", "middle") + text(p[0], p[1] + 12, sub, "t-s f-ink3", "middle"))
     b += f'<path d="M{R[0]+30},{R[1]-17} Q170,10 {U[0]-46},{U[1]-6}" class="s-main" marker-end="url(#tso)"/>'
     b += text(165, 22, "ディスパッチ", "t-s f-ou", "middle")
@@ -193,37 +172,20 @@ def recovery():
     return svg(420, 172, b, "障害回復のタイムライン")
 
 def star():
-    def box(t, sub, hi=False):
-        st = "background:var(--ou-bg);color:var(--ou-2);border:1px solid var(--ou)" if hi else "background:var(--sheet-3);color:var(--ink)"
-        return (f'<div style="{st};border-radius:8px;padding:6px 8px;font-size:12px;line-height:1.35;text-align:center"><b>{t}</b>'
-                f'<span style="display:block;font-size:11px;color:var(--ink-3)">{sub}</span></div>')
-    e = '<div></div>'
-    return ('<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:center">'
-            + e + box("顧客", "名前・住所") + e
-            + box("商品", "商品名・単価") + box("売上（ファクト）", "いつ・誰が・何を・**何個**・いくら", 1).replace("**何個**", "<b>何個</b>") + box("店舗", "店名・地域")
-            + e + box("日付", "年・月・曜日") + e
-            + '</div>')
+    return grid([blank(), tile("顧客", "名前・住所"), blank(),
+                 tile("商品", "商品名・単価"), tile("売上（ファクト）", "いつ・誰が・何を・<b>何個</b>・いくら", "oo"), tile("店舗", "店名・地域"),
+                 blank(), tile("日付", "年・月・曜日"), blank()], 3)
 
 # ───────────────────────── 03-3 ─────────────────────────
 def osi():
-    # 層・よく出るプロトコル・中継装置を1枚に。試験に出る 7・4・3・2 層は左にオレンジの線
-    rows = [("7 アプリケーション", "HTTP・SMTP・POP3・IMAP・FTP・DNS・DHCP・SNMP・NTP・SSH", "ゲートウェイ", 1),
-            ("6 プレゼンテーション", "文字コード・圧縮・暗号化（データの形式）", "↑", 0),
-            ("5 セッション", "通信の開始〜終了の管理", "↑", 0),
-            ("4 トランスポート", "TCP・UDP（ポート番号でアプリへ）", "↑", 1),
-            ("3 ネットワーク", "IP・ICMP・ARP・RARP・IPsec・RIP・OSPF・BGP・VRRP（IPアドレスで遠くへ）", "ルータ・L3SW", 1),
-            ("2 データリンク", "イーサネット・PPP・VLAN・STP（MACアドレスで隣へ）", "ブリッジ・L2SW", 1),
-            ("1 物理", "ケーブル・電気信号", "リピータ・ハブ", 0)]
-    h = '<div style="display:flex;flex-direction:column;gap:3px">'
-    for name, protos, dev, hot in rows:
-        bar = "box-shadow:inset 3px 0 0 var(--ou);" if hot else ""
-        dcol = "var(--ink-3)" if dev == "↑" else "var(--ou-2)"
-        h += (f'<div style="display:grid;grid-template-columns:8.2em minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;'
-              f'background:var(--sheet-3);border-radius:6px;padding:5px 10px;{bar}">'
-              f'<b style="font-size:12.5px;color:var(--ink)">{name}</b>'
-              f'<span style="font-size:11.5px;color:var(--ink-2);line-height:1.5">{protos}</span>'
-              f'<span style="font-size:11px;color:{dcol};white-space:nowrap">{dev}</span></div>')
-    return h + '</div>'
+    # 層・よく出るプロトコル・中継装置を1枚に。試験に出る 7・4・3・2 層は左にアクセントの線
+    return rows([("7 アプリケーション", "HTTP・SMTP・POP3・IMAP・FTP・DNS・DHCP・SNMP・NTP・SSH", "ゲートウェイ", 1, 1),
+                 ("6 プレゼンテーション", "文字コード・圧縮・暗号化（データの形式）", "↑", 0, 0),
+                 ("5 セッション", "通信の開始〜終了の管理", "↑", 0, 0),
+                 ("4 トランスポート", "TCP・UDP（ポート番号でアプリへ）", "↑", 1, 0),
+                 ("3 ネットワーク", "IP・ICMP・ARP・RARP・IPsec・RIP・OSPF・BGP・VRRP（IPアドレスで遠くへ）", "ルータ・L3SW", 1, 1),
+                 ("2 データリンク", "イーサネット・PPP・VLAN・STP（MACアドレスで隣へ）", "ブリッジ・L2SW", 1, 1),
+                 ("1 物理", "ケーブル・電気信号", "リピータ・ハブ", 0, 1)])
 
 def handshake():
     C, S = 70, 290
@@ -239,35 +201,21 @@ def handshake():
 
 # ───────────────────────── 03-4 ─────────────────────────
 def subnet():
-    bits = "11000000.10101000.00000001.10|000010"
-    net, host = "11000000 10101000 00000001 10", "000010"
-    cell = lambda c, on: f'<span style="flex:1 1 11px;min-width:0;max-width:11px;text-align:center;font-family:var(--f-mono);font-size:11px;border-radius:2px;{"background:var(--ou-bg);color:var(--ou-2)" if on else "background:var(--sheet-3);color:var(--ink-2)"}">{c}</span>'
-    n = "".join(cell(c, 1) if c != " " else '<span style="flex:0 0 5px"></span>' for c in net)
-    hh = "".join(cell(c, 0) for c in host)
-    return (f'<div style="display:flex">{n}<span style="flex:0 0 6px"></span>{hh}</div>'
-            '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:4px"><span style="color:var(--ou-2)">ネットワーク部 26ビット（/26）</span><span>ホスト部 6ビット</span></div>'
-            '<div style="font-family:var(--f-mono);font-size:12px;margin-top:8px;line-height:1.7">192.168.1.130/26<br>NW ＝ AND → 192.168.1.<b class="hl">128</b>　BC ＝ ホスト全部1 → .<b class="hl">191</b><br>ホスト数 ＝ 2⁶−2 ＝ <b class="hl">62</b>（.129〜.190）</div>')
+    return (bits([("11000000 10101000 00000001 10", True), ("000010", False)])
+            + ends("ネットワーク部 26ビット（/26）", "ホスト部 6ビット", "o")
+            + mono('192.168.1.130/26<br>NW ＝ AND → 192.168.1.<b class="hl">128</b>　BC ＝ ホスト全部1 → .<b class="hl">191</b><br>'
+                   'ホスト数 ＝ 2⁶−2 ＝ <b class="hl">62</b>（.129〜.190）'))
 
 # ───────────────────────── 03-5 ─────────────────────────
 def keys():
-    def lane(title, steps, color):
-        s = ""
-        for i, (who, act, key) in enumerate(steps):
-            if i:
-                s += '<div style="color:var(--ink-3);padding:0 4px;display:flex;align-items:center">→</div>'
-            s += (f'<div style="flex:1 1 120px;min-width:110px;background:var(--sheet-3);border-radius:8px;padding:6px 8px">'
-                  f'<div style="font-size:11px;color:var(--ink-3)">{who}</div><div style="font-size:12.5px;font-weight:700">{act}</div>'
-                  f'<div style="font-size:12px;color:{color};font-weight:700">{key}</div></div>')
-        return f'<div style="font-family:var(--f-hand);font-size:13px;margin:4px 0">{title}</div><div style="display:flex;flex-wrap:wrap;gap:4px 0">{s}</div>'
-    a = lane("暗号化（盗聴対策）", [("送信者", "暗号化", "受信者の公開鍵"), ("受信者", "復号", "受信者の秘密鍵")], "var(--link)")
-    b = lane("デジタル署名（改ざん・なりすまし・否認対策）", [("送信者", "ハッシュ値を署名", "送信者の秘密鍵"), ("受信者", "署名を検証", "送信者の公開鍵")], "var(--ou-2)")
-    c = lane("証明書の検証", [("認証局", "証明書に署名", "CAの秘密鍵"), ("利用者", "証明書を検証", "CAの公開鍵")], "var(--ou-2)")
-    return a + '<div style="height:8px"></div>' + b + '<div style="height:8px"></div>' + c
+    return (chain("暗号化（盗聴対策）", [("送信者", "暗号化", "受信者の公開鍵"), ("受信者", "復号", "受信者の秘密鍵")], "link")
+            + chain("デジタル署名（改ざん・なりすまし・否認対策）", [("送信者", "ハッシュ値を署名", "送信者の秘密鍵"), ("受信者", "署名を検証", "送信者の公開鍵")])
+            + chain("証明書の検証", [("認証局", "証明書に署名", "CAの秘密鍵"), ("利用者", "証明書を検証", "CAの公開鍵")]))
 
 def dmz():
     b = arrow_defs("dz")
     def bx(x, y, w, s, sub="", cls="f-sheet3"):
-        return (f'<rect x="{x}" y="{y}" width="{w}" height="36" rx="8" class="{cls}" stroke="var(--line)"/>' + text(x + w / 2, y + 15, s, "t-s f-ink", "middle")
+        return (f'<rect x="{x}" y="{y}" width="{w}" height="36" rx="8" class="{cls} st-line"/>' + text(x + w / 2, y + 15, s, "t-s f-ink", "middle")
                 + (text(x + w / 2, y + 29, sub, "t-s f-ink3", "middle") if sub else ""))
     b += bx(4, 70, 96, "インターネット")
     b += bx(122, 70, 44, "FW", "", "f-oubg")
@@ -281,22 +229,32 @@ def dmz():
 
 # ───────────────────────── 04-1 ─────────────────────────
 def vmodel():
-    L = ["業務要件定義", "システム要件定義", "システム方式設計", "ソフトウェア要件定義", "ソフトウェア方式設計", "ソフトウェア詳細設計"]
-    R = ["運用テスト", "システム適格性確認テスト", "システム結合テスト", "ソフトウェア適格性確認テスト", "ソフトウェア結合テスト", "単体テスト"]
-    rows = ""
-    for i in range(6):
-        pad = i * 4
-        col = "var(--ink-3)" if i == 0 else "var(--ou-2)"
-        rows += (f'<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(14px,{40-pad*2}px) minmax(0,1fr);align-items:center;gap:6px;padding:0 {pad}%;font-size:12px">'
-                 f'<span style="text-align:right;color:var(--ink-2)">{L[i]}</span>'
-                 f'<span style="border-top:1.5px dashed var(--line);height:0"></span>'
-                 f'<span style="color:{col}">{R[i]}</span></div>')
-    rows += '<div style="text-align:center;font-size:12px;color:var(--ink);font-weight:700;margin-top:4px">＼ プログラミング ／</div>'
-    head = ('<div style="display:grid;grid-template-columns:1fr 1fr;font-size:11px;color:var(--ink-3);margin-bottom:4px">'
-            '<span style="text-align:right;padding-right:26px">決める（作り込み）↓</span><span style="padding-left:26px">↑ 確かめる（検証）</span></div>')
-    return head + f'<div style="display:flex;flex-direction:column;gap:5px">{rows}</div>'
+    return vpairs(["業務要件定義", "システム要件定義", "システム方式設計", "ソフトウェア要件定義", "ソフトウェア方式設計", "ソフトウェア詳細設計"],
+                  ["運用テスト", "システム適格性確認テスト", "システム結合テスト", "ソフトウェア適格性確認テスト", "ソフトウェア結合テスト", "単体テスト"],
+                  head=("決める（作り込み）↓", "↑ 確かめる（検証）"), bottom="＼ プログラミング ／")
 
 # ───────────────────────── 05-1 ─────────────────────────
+def crash():
+    # 計画 A3日→B5日→C5日＝13日、完了予定日は11日目。クラッシング＝B・Cに人を足して短く、ファストトラッキング＝Cを前倒しして重ねる
+    X0, D, DUE = 70, 26, 11
+    def bar(day0, days, row_y, label, hot=False):
+        x, w = X0 + day0 * D, days * D - 2
+        return (f'<rect x="{x}" y="{row_y}" width="{w}" height="20" rx="4" class="{"f-oubg st-ou" if hot else "f-sheet3"}"/>'
+                + text(x + w / 2, row_y + 14, label, "t-s f-ou" if hot else "t-s f-ink", "middle"))
+    def due(y0, y1):
+        x = X0 + DUE * D - 1
+        return f'<line x1="{x}" y1="{y0}" x2="{x}" y2="{y1}" class="s-dash"/>' + text(x, y1 + 12, "完了予定日（11日目）", "t-s f-ink3", "middle")
+    b = text(4, 14, "クラッシング：人や資源を足して、1つ1つを短くする", "t-m f-ink hand")
+    b += text(4, 38, "計画", "t-s f-ink3") + bar(0, 3, 24, "A 3日") + bar(3, 5, 24, "B 5日") + bar(8, 5, 24, "C 5日")
+    b += text(4, 64, "短縮後", "t-s f-ink3") + bar(0, 3, 50, "A 3日") + bar(3, 4, 50, "B 4日", True) + bar(7, 3, 50, "C 3日", True)
+    b += due(20, 76)
+    y = 108
+    b += text(4, y + 14, "ファストトラッキング：順番の作業を重ねて並行に進める", "t-m f-ink hand")
+    b += text(4, y + 38, "計画", "t-s f-ink3") + bar(0, 3, y + 24, "A 3日") + bar(3, 5, y + 24, "B 5日") + bar(8, 5, y + 24, "C 5日")
+    b += text(4, y + 64, "短縮後", "t-s f-ink3") + bar(0, 3, y + 50, "A 3日") + bar(3, 5, y + 50, "B 5日") + bar(6, 5, y + 76, "C 5日（前倒し）", True)
+    b += due(y + 20, y + 102)
+    return svg(460, y + 120, b, "クラッシングとファストトラッキング")
+
 def cpm():
     N = {1: (28, 105), 2: (130, 38), 3: (130, 172), 4: (250, 38), 5: (250, 172), 6: (338, 105)}
     T = {1: "0/0", 2: "1/2", 3: "5/5", 4: "9/10", 5: "9/9", 6: "14/14"}
@@ -317,7 +275,7 @@ def cpm():
             b += text(mx, my - 6, lab, "t-s " + ("f-ou" if crit else "f-ink2"), "middle")
     for k, (x, y) in N.items():
         crit = k in (1, 3, 5, 6)
-        b += f'<circle cx="{x}" cy="{y}" r="{r}" class="f-sheet3" stroke="{"var(--ou)" if crit else "var(--line)"}" stroke-width="1.5"/>'
+        b += f'<circle cx="{x}" cy="{y}" r="{r}" class="f-sheet3 {"st-ou" if crit else "st-line"}"/>'
         b += text(x, y + 4, str(k), "t-m f-ink", "middle")
         b += text(x, y + (30 if y > 100 else -20), T[k], "t-s f-ink3 mono", "middle")
     b += text(190, 224, "最早/最遅が一致する点を結ぶ＝クリティカルパス", "t-s f-ou hand", "middle")
@@ -356,6 +314,27 @@ def plc():
         x = X0 + (X1 - X0) * t
         b += text(x, Y0 + 16, a, "t-s f-ink", "middle") + text(x, Y0 + 31, p, "t-s f-ink3", "middle")
     return svg(360, 160, b, "プロダクトライフサイクル")
+
+def fiveforce():
+    return grid([blank(), tile("新規参入の脅威"), blank(),
+                 tile("売り手（サプライヤ）の交渉力"), tile("業界内の競争", tone="oo"), tile("買い手（バイヤ）の交渉力"),
+                 blank(), tile("代替品の脅威"), blank()], 3, center_wide=True)
+
+def valuechain():
+    # 支援活動（4本の帯）＋主活動（5つの箱）＋右端のマージン。幅は1段まるごとの図（760）に合わせる
+    W, X0, X1 = 760, 34, 690
+    b = (text(14, 64, "支援活動", "t-m f-ink3", "middle", 'writing-mode="vertical-rl"')
+         + text(14, 150, "主活動", "t-m f-ink3", "middle", 'writing-mode="vertical-rl"'))
+    for k, name in enumerate(["全般管理（インフラストラクチャ）", "人事・労務管理", "技術開発", "調達活動"]):
+        y = 6 + k * 28
+        b += f'<rect x="{X0}" y="{y}" width="{X1 - X0 - 6}" height="24" rx="4" class="f-sheet3"/>' + text((X0 + X1 - 6) / 2, y + 16, name, "t-m f-ink", "middle")
+    w = (X1 - X0 - 6 - 4 * 6) / 5
+    for k, name in enumerate(["購買物流", "製造", "出荷物流", "販売・マーケ", "サービス"]):
+        x = X0 + k * (w + 6)
+        b += f'<rect x="{x:.1f}" y="122" width="{w:.1f}" height="52" rx="4" class="f-sheet3"/>' + text(x + w / 2, 152, name, "t-m f-ink", "middle")
+    b += (f'<path d="M{X1},6 L{W - 30},6 L{W - 6},90 L{W - 30},174 L{X1},174 Z" class="f-oubg"/>'
+          + text(W - 34, 90, "マージン", "t-m f-ou", "middle", 'writing-mode="vertical-rl"'))
+    return svg(W, 180, b, "バリューチェーン")
 
 # ───────────────────────── 06-2 ─────────────────────────
 def eoq():
@@ -417,24 +396,15 @@ def breakeven():
 
 # ───────────────────────── 06-3 ─────────────────────────
 def ipr():
-    def box(t, sub, hi=False):
-        bg = "background:var(--ou-bg);color:var(--ou-2)" if hi else "background:var(--sheet-3);color:var(--ink)"
-        return (f'<div style="{bg};border-radius:6px;padding:5px 8px;font-size:12px;line-height:1.35"><b>{t}</b>'
-                f'<span style="display:block;font-size:11px;color:var(--ink-3)">{sub}</span></div>')
-    def col(head, note, items):
-        return (f'<div style="display:flex;flex-direction:column;gap:4px;min-width:0">'
-                f'<div style="font-size:12px;font-weight:700;color:var(--ink)">{head}</div>'
-                f'<div style="font-size:11px;color:var(--ink-3);margin:-3px 0 2px">{note}</div>{"".join(items)}</div>')
-    return ('<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'
-            + col("産業財産権", "特許庁に出願・登録が必要", [box("特許権", "発明", 1), box("実用新案権", "考案（形・構造）", 1), box("意匠権", "デザイン", 1), box("商標権", "ロゴ・名前", 1)])
-            + col("著作権", "登録不要。作った瞬間に発生", [box("著作権", "表現（文章・音楽・プログラム）")])
-            + col("その他", "登録の要らないものも", [box("営業秘密", "不正競争防止法"), box("回路配置利用権", "半導体の回路"), box("育成者権", "植物の新品種")])
-            + '</div>')
+    return columns(column("産業財産権", [tile("特許権", "発明", "o"), tile("実用新案権", "考案（形・構造）", "o"), tile("意匠権", "デザイン", "o"), tile("商標権", "ロゴ・名前", "o")],
+                          note="特許庁に出願・登録が必要"),
+                   column("著作権", [tile("著作権", "表現（文章・音楽・プログラム）")], note="登録不要。作った瞬間に発生"),
+                   column("その他", [tile("営業秘密", "不正競争防止法"), tile("回路配置利用権", "半導体の回路"), tile("育成者権", "植物の新品種")], note="登録の要らないものも"))
 
 def contracts():
     b = arrow_defs("ct")
     def bx(x, y, s, cls="f-sheet3"):
-        return f'<rect x="{x-34}" y="{y-13}" width="68" height="26" rx="7" class="{cls}" stroke="var(--line)"/>' + text(x, y + 4, s, "t-s f-ink", "middle")
+        return f'<rect x="{x-34}" y="{y-13}" width="68" height="26" rx="7" class="{cls} st-line"/>' + text(x, y + 4, s, "t-s f-ink", "middle")
     def panel(ox, t1, t2, title, cmd_from_client):
         s = text(ox + 85, 14, title, "t-m f-ink hand", "middle")
         A, B, W = (ox + 40, 46), (ox + 130, 46), (ox + 85, 130)

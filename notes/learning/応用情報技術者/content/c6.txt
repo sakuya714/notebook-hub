@@ -79,16 +79,7 @@ BR: 負け犬 :: 撤退を考える
 )
 
 ## 競争を分析する（ファイブフォース・SWOT）
-@html
-<div class="fig"><div class="ttl">ファイブフォース分析（業界の儲かりやすさ）</div>
-<div style="display:grid;grid-template-columns:1fr 1.3fr 1fr;grid-template-rows:auto auto auto;gap:6px;font-size:12px;text-align:center;align-items:center">
-<div></div><div style="background:var(--sheet-3);border-radius:8px;padding:6px">新規参入の脅威</div><div></div>
-<div style="background:var(--sheet-3);border-radius:8px;padding:6px">売り手（サプライヤ）の交渉力</div>
-<div style="background:var(--ou-bg);border:1px solid var(--ou);border-radius:8px;padding:10px 6px;color:var(--ou-2);font-weight:700">業界内の競争</div>
-<div style="background:var(--sheet-3);border-radius:8px;padding:6px">買い手（バイヤ）の交渉力</div>
-<div></div><div style="background:var(--sheet-3);border-radius:8px;padding:6px">代替品の脅威</div><div></div>
-</div><div class="cap">5つが弱いほど、その業界は儲かりやすい</div></div>
-@end
+@fig! fiveforce | ファイブフォース分析（業界の儲かりやすさ） | 5つが弱いほど、その業界は儲かりやすい
 @mx アンゾフの成長マトリクス
 x: 既存の製品 | 新しい製品
 y: 既存の市場 | 新しい市場
@@ -112,19 +103,7 @@ BR: 脅威 T :: 海外企業の参入
 @end
 ! 「景気がいい」は自社の力じゃないから強みじゃなく機会。クロスSWOT＝S×Oで積極推進、W×Tで撤退も検討
 + ポーターの3つの基本戦略 — コストリーダーシップ・差別化・集中
-@html
-<div class="fig"><div class="ttl">バリューチェーン（基本情報まとめの図）</div>
-<div style="display:grid;grid-template-columns:auto repeat(5,minmax(0,1fr)) 22px;gap:3px;font-size:11px;text-align:center">
-<div style="grid-row:span 4;writing-mode:vertical-rl;color:var(--ink-3);display:flex;align-items:center;justify-content:center">支援活動</div>
-<div style="grid-column:span 5;background:var(--sheet-3);border-radius:4px;padding:3px">全般管理（インフラストラクチャ）</div>
-<div style="grid-row:span 5;background:var(--ou-bg);border-radius:0 12px 12px 0;color:var(--ou-2);writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center">マージン</div>
-<div style="grid-column:span 5;background:var(--sheet-3);border-radius:4px;padding:3px">人事・労務管理</div>
-<div style="grid-column:span 5;background:var(--sheet-3);border-radius:4px;padding:3px">技術開発</div>
-<div style="grid-column:span 5;background:var(--sheet-3);border-radius:4px;padding:3px">調達活動</div>
-<div style="writing-mode:vertical-rl;color:var(--ink-3)">主活動</div>
-<div style="background:var(--sheet-3);border-radius:4px;padding:6px 2px">購買物流</div><div style="background:var(--sheet-3);border-radius:4px;padding:6px 2px">製造</div><div style="background:var(--sheet-3);border-radius:4px;padding:6px 2px">出荷物流</div><div style="background:var(--sheet-3);border-radius:4px;padding:6px 2px">販売・マーケ</div><div style="background:var(--sheet-3);border-radius:4px;padding:6px 2px">サービス</div>
-</div><div class="cap">どの活動で価値（利益）が生まれてるかを見る</div></div>
-@end
+@fig! valuechain | バリューチェーン（基本情報まとめの図） | どの活動で価値（利益）が生まれてるかを見る
 
 ## 分業のかたち（垂直統合と水平分業）
 | 型 | 設計 | 製造 | 販売 | 代表例 |

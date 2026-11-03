@@ -16,6 +16,8 @@
 
 迷ったら「2冊目のノートでもそのまま使うか？」で判断する。使うなら theme/ か engine/、そのノートだけなら notes/。
 
+図（figs.py）も同じ：ノートの figs.py は **図の中身（文字・数字・並び）だけ**を書き、`engine/figkit.py` の部品（SVG の `svg`・`text`・`path`、HTML の `tile`・`grid`・`column(s)`・`rows`・`stack`・`ends`・`mono`・`bits`・`cellcol`・`hrow`・`chain`・`vpairs`・`timing`）と theme のクラス（`f-ou`・`s-ax`・`st-line` など）だけを使う。`style=`・`<style>`・`var(--…)` をノート側（本文・figs.py）に書くとチェックで止まる。新しい形の図が要るなら、部品を figkit に足して見た目を `theme/blocks.css` の `.fk-*` に足す。
+
 ## チェック（ビルドのたびに自動）
 
 `python3 hub.py build` の最初に `engine/check.py` が全ノートを調べ、**エラーが1つでもあればビルドを止める**（`python3 hub.py check` で単独でも走る）。

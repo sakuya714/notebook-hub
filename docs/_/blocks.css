@@ -225,6 +225,67 @@ table.tb{border-collapse:collapse; width:100%; font-size:var(--fs-0); line-heigh
 .f-oubg{fill:var(--ou-bg)} .f-sheet3{fill:var(--sheet-3)} .f-sheet{fill:var(--sheet)} .f-bg{fill:var(--sheet-2)}
 .t-s{font-size:11px} .t-m{font-size:12.5px} .t-l{font-size:14px; font-weight:700}
 svg text{font-family:var(--f-body)}
+.st-line{stroke:var(--line)} .st-ou{stroke:var(--ou); stroke-width:1.5}  /* 塗りつぶしはそのまま、枠線だけ付ける */
+
+/* ───── 図の部品（engine/figkit.py の HTML 部品。ノートの figs.py はこれを組み合わせるだけ）───── */
+.fk-tile{background:var(--sheet-3); color:var(--ink); border-radius:8px; padding:6px 8px; font-size:12px; line-height:1.35; text-align:center; min-width:0}
+.fk-tile b{display:block; font-weight:700}
+.fk-tile span{display:block; font-size:11px; color:var(--ink-3); font-weight:400}
+.fk-tile.o, .fk-tile.oo{background:var(--ou-bg); color:var(--ou-2)}
+.fk-tile.oo{border:1px solid var(--ou); padding:10px 6px}
+.fk-tile.s{border-radius:4px; padding:3px 6px; font-size:11px}
+.fk-tile.s b{font-weight:400} .fk-tile.s.o b{font-weight:700}
+.fk-grid{display:grid; gap:6px; align-items:center}
+.fk-grid.c2{grid-template-columns:repeat(2,minmax(0,1fr))} .fk-grid.c3{grid-template-columns:repeat(3,minmax(0,1fr))} .fk-grid.c3.cw{grid-template-columns:1fr 1.3fr 1fr}
+.fk-grid.c4{grid-template-columns:repeat(4,minmax(0,1fr))} .fk-grid.c5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.fk-cols{display:flex; flex-wrap:wrap; gap:10px 14px}
+.fk-col{flex:1 1 100px; min-width:96px; display:flex; flex-direction:column; gap:4px}
+.fk-col > .h{font-size:12px; font-weight:700; color:var(--ink)}
+.fk-col > .n{font-size:11px; color:var(--ink-3); margin:-3px 0 2px}
+.fk-col > .s{font-size:11px; color:var(--ink-3)}
+.fk-col.c > .h, .fk-col.c > .n, .fk-col.c > .s{text-align:center}
+.fk-rows{display:flex; flex-direction:column; gap:3px}
+.fk-rows .r{display:grid; grid-template-columns:8.2em minmax(0,1fr) auto; gap:4px 10px; align-items:baseline; background:var(--sheet-3); border-radius:6px; padding:5px 10px}
+.fk-rows .r.o{box-shadow:inset 3px 0 0 var(--ou)}
+.fk-rows .r b{font-size:12.5px; color:var(--ink)}
+.fk-rows .r span{font-size:11.5px; color:var(--ink-2); line-height:1.5}
+.fk-rows .r i{font-style:normal; font-size:11px; color:var(--ink-3); white-space:nowrap}
+.fk-rows .r i.o{color:var(--ou-2)}
+.fk-ends{display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--ink-3); margin-top:6px}
+.fk-ends .o{color:var(--ou-2)}
+.fk-mono{font-family:var(--f-mono); font-size:12px; line-height:1.7; margin-top:8px}
+.fk-bits{display:flex}
+.fk-bits .b{flex:1 1 11px; min-width:0; max-width:11px; text-align:center; font-family:var(--f-mono); font-size:11px; border-radius:2px; background:var(--sheet-3); color:var(--ink-2)}
+.fk-bits .b.o{background:var(--ou-bg); color:var(--ou-2)}
+.fk-bits .g{flex:0 0 5px} .fk-bits .gg{flex:0 0 6px}
+.fk-hrow{display:flex; gap:4px}
+.fk-cellcol{display:flex; flex-direction:column; gap:3px; width:34px}
+.fk-cellcol > i{font-style:normal; font-size:10px; color:var(--ink-3); text-align:center}
+.fk-cell{height:20px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--f-mono); font-size:11px; background:var(--sheet-3); color:var(--ink)}
+.fk-cell.o{background:var(--ou); color:var(--bg)}
+.fk-chain-t{font-family:var(--f-hand); font-size:13px; margin:4px 0}
+.fk-chain + .fk-chain-t{margin-top:12px}
+.fk-chain{display:flex; flex-wrap:wrap; gap:4px 0}
+.fk-chain > i{font-style:normal; color:var(--ink-3); padding:0 4px; display:flex; align-items:center}
+.fk-chain .bx{flex:1 1 120px; min-width:110px; background:var(--sheet-3); border-radius:8px; padding:6px 8px}
+.fk-chain .bx small{display:block; font-size:11px; color:var(--ink-3)}
+.fk-chain .bx b{display:block; font-size:12.5px}
+.fk-chain .bx em{display:block; font-style:normal; font-size:12px; font-weight:700; color:var(--ou-2)}
+.fk-chain.link .bx em{color:var(--link)}
+.fk-v .hd{display:grid; grid-template-columns:1fr 1fr; font-size:11px; color:var(--ink-3); margin-bottom:4px}
+.fk-v .hd span:first-child{text-align:right; padding-right:26px} .fk-v .hd span:last-child{padding-left:26px}
+.fk-v .rs{display:flex; flex-direction:column; gap:5px}
+.fk-v .r{display:grid; grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr); align-items:center; gap:6px; font-size:12px}
+.fk-v .r.l1{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding:0 4%} .fk-v .r.l2{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr); padding:0 8%}
+.fk-v .r.l3{grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr); padding:0 12%} .fk-v .r.l4{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr); padding:0 16%}
+.fk-v .r.l5{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr); padding:0 20%}
+.fk-v .r span:first-child{text-align:right; color:var(--ink-2)} .fk-v .r span:last-child{color:var(--ou-2)} .fk-v .r.k span:last-child{color:var(--ink-3)}
+.fk-v .r .ln{border-top:1.5px dashed var(--line); height:0}
+.fk-v .bt{text-align:center; font-size:12px; color:var(--ink); font-weight:700; margin-top:4px}
+.fk-timing{border-collapse:separate; border-spacing:3px; font-family:var(--f-mono); font-size:11px; margin:0 auto}
+.fk-timing th{color:var(--ink-3); font-weight:400; padding:0 4px}
+.fk-timing td{width:26px; height:22px; text-align:center; border-radius:4px; color:var(--bg)}
+.fk-timing td.on{background:var(--kihon)} .fk-timing tr.o td.on{background:var(--ou)}
 svg .hand{font-family:var(--f-hand)}
 
 /* metro map */
@@ -277,7 +338,7 @@ svg .hand{font-family:var(--f-hand)}
 body.mode-accent .items .k{display:none}
 body.mode-accent .grp:not(:has(.o)){display:none}
 body.mode-accent .note.k, body.mode-accent .tbw.k, body.mode-accent .fx:not(.o){display:none}
-/* 直前カードは「応用だけ」でも全部見せる（グレーの行を消すとカードの比較が欠ける） */
+/* 直前カードは「〇〇だけ」（アクセントだけ）表示でも全部見せる（グレーの行を消すとカードの比較が欠ける） */
 body.mode-accent .tcard .items .k.k{display:revert}
 body.mode-accent .tcard .grp.grp, body.mode-accent .tcard .tbw.k.k{display:block}
 body.mode-accent .tcard .fx.fx{display:block}

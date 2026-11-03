@@ -2,6 +2,7 @@
 """ビルド前のチェック（全ノート共通）。エラーが1つでもあればビルドを止める。
 
 1. 書き間違い：知らない @記法・@xxx と @end の数の食い違い・存在しない章へのリンク・note.json の不備
+   ＋置き場所：ノート側（本文・figs.py）に見た目（style= ・<style>・var(--…)）を書いていないか
 2. 公開してはいけない情報：メール・電話・学籍番号・APIキー・Mac のパス・.private-words に書いた言葉
    （このサイトは GitHub で公開する。.private-words は公開しない＝.gitignore 済み）
 """
@@ -55,6 +56,16 @@ def scan_privacy(errors):
 
 def rel(f):
     return os.path.relpath(f, ROOT)
+
+def scan_separation(note_dir, errors):
+    """ノート側（本文・figs.py）に見た目（CSS）を書かない。見た目は theme/、部品は engine/figkit.py に置く"""
+    targets = glob.glob(os.path.join(note_dir, "content", "*.txt")) + glob.glob(os.path.join(note_dir, "figs.py"))
+    for f in targets:
+        with open(f, encoding="utf-8") as fh:
+            for i, line in enumerate(fh, 1):
+                for pat, what in ((r"style\s*=", "style="), (r"<style", "<style>"), (r"var\(--", "var(--…)")):
+                    if re.search(pat, line):
+                        errors.append(f"{rel(f)}:{i}: ノート側に見た目の指定（{what}）がある。theme/blocks.css のクラスか engine/figkit.py の部品を使う")
 
 def check_note(note_dir, errors, warns):
     name = rel(note_dir)
@@ -158,6 +169,7 @@ def run(note_dirs):
     errors, warns = [], []
     for d in note_dirs:
         check_note(d, errors, warns)
+        scan_separation(d, errors)
     scan_privacy(errors)
     for w in warns:
         print("  注意:", w)
