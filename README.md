@@ -42,12 +42,15 @@ uv run --with playwright python -I tools/qa.py                 # 1400〜390px �
 uv run --with playwright python -I tools/qa.py --shots 出力先    # ＋章・ボードごとのスクショ
 ```
 
+直前カード（`@card`）の漏れチェック（カードの飛び先の節にある用語のうち、カードに出てこないもの）：`python3 tools/cards.py`
+
 ## ファイル構成
 
 ```
 notebook-hub/
 ├── hub.py                      … コマンド（build / check / serve / new / mkdir）
 ├── tools/qa.py                 … 見た目のチェック（Playwright で全ノートを撮って調べる）
+├── tools/cards.py              … 直前カードの漏れチェック（飛び先の節にあってカードに無い用語）
 ├── .private-words              … 公開NGの言葉（自分のMacだけ。公開しない）
 ├── engine/                     … 製本機（全ノート共通）
 │   ├── builder.py              …   notes/ を読んで docs/ に組み立てる

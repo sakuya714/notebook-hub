@@ -271,6 +271,7 @@ svg .hand{font-family:var(--f-hand)}
 .tcard .ol{padding-left:1.3em; color:var(--ink)}
 .tcard .cols{columns:1; column-rule:0}
 .bb > .tcard, .sh-body > .tcard{max-width:600px}
+@media (max-width:480px){ .tcard .tb th, .tcard .tb td:first-child{white-space:normal} }  /* スマホではカードの表を横にはみ出させない */
 
 /* filter modes */
 body.mode-accent .items .k{display:none}
