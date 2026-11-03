@@ -101,7 +101,8 @@ class Builder:
         label, lines, ou = self.fx
         self.ctx.formulas.append((self.ch, label, lines, ou))
         self.ctx.uses.add("formula")
-        body = "\n".join(inline(l, self.ctx) for l in lines)  # 公式の中でも **太字** や $数式$ が使える
+        # 1行ずつ span にする：幅が足りないときは折り返し、折り返した続きは字下げして元の行とわかるように
+        body = "".join(f'<span class="fxl">{inline(l, self.ctx)}</span>' for l in lines)  # 公式の中でも **太字** や $数式$ が使える
         self.add(DENSE, f'<div class="fx{" o" if ou else ""}"><div class="fl">{esc(label) if label else "公式"}</div><div class="fxb">{body}</div></div>')
         self.fx = None
 

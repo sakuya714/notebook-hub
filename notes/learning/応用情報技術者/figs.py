@@ -219,10 +219,10 @@ def handshake():
 def subnet():
     bits = "11000000.10101000.00000001.10|000010"
     net, host = "11000000 10101000 00000001 10", "000010"
-    cell = lambda c, on: f'<span style="display:inline-block;width:11px;text-align:center;font-family:var(--f-mono);font-size:11px;border-radius:2px;{"background:var(--ou-bg);color:var(--ou-2)" if on else "background:var(--sheet-3);color:var(--ink-2)"}">{c}</span>'
-    n = "".join(cell(c, 1) if c != " " else '<span style="display:inline-block;width:5px"></span>' for c in net)
+    cell = lambda c, on: f'<span style="flex:1 1 11px;min-width:0;max-width:11px;text-align:center;font-family:var(--f-mono);font-size:11px;border-radius:2px;{"background:var(--ou-bg);color:var(--ou-2)" if on else "background:var(--sheet-3);color:var(--ink-2)"}">{c}</span>'
+    n = "".join(cell(c, 1) if c != " " else '<span style="flex:0 0 5px"></span>' for c in net)
     hh = "".join(cell(c, 0) for c in host)
-    return (f'<div style="white-space:nowrap;overflow-x:auto">{n}<span style="display:inline-block;width:6px"></span>{hh}</div>'
+    return (f'<div style="display:flex">{n}<span style="flex:0 0 6px"></span>{hh}</div>'
             '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:4px"><span style="color:var(--ou-2)">ネットワーク部 26ビット（/26）</span><span>ホスト部 6ビット</span></div>'
             '<div style="font-family:var(--f-mono);font-size:12px;margin-top:8px;line-height:1.7">192.168.1.130/26<br>NW ＝ AND → 192.168.1.<b class="hl">128</b>　BC ＝ ホスト全部1 → .<b class="hl">191</b><br>ホスト数 ＝ 2⁶−2 ＝ <b class="hl">62</b>（.129〜.190）</div>')
 

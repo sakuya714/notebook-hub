@@ -138,10 +138,13 @@ mjx-container{color:var(--ink)}
 /* formula */
 .fx{break-inside:avoid; background:var(--sheet-2); border:1px solid var(--rule); border-radius:10px; padding:10px 12px 10px; margin:0 0 14px; overflow-x:auto}
 .fx .fl{font-size:var(--fs-0); letter-spacing:.14em; color:var(--ou); margin-bottom:4px}
-.fx .fxb{margin:0; font-family:var(--f-mono); font-size:12.5px; line-height:1.7; color:var(--ink); white-space:pre}
+.fx .fxb{margin:0; font-family:var(--f-mono); font-size:12.5px; line-height:1.7; color:var(--ink); white-space:pre-wrap; overflow-wrap:anywhere}
+.fx .fxb .fxl{display:block; padding-left:2em; text-indent:-2em}
+.fx .fxb .fxl *{text-indent:0}
+.fx .fxb .fxl:empty::before{content:"\200b"}
 .fx .fxb mjx-container{font-size:110%}
 .fx.o{border-color:color-mix(in srgb, var(--ou) 40%, var(--rule))}
-@media (max-width:480px){ .fx .fxb{white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px} }
+@media (max-width:480px){ .fx .fxb{font-size:12px} }
 @media (max-width:480px){ .eq{padding:10px 8px} .eq mjx-container{font-size:94%} }  /* スマホでは1行の数式を少しだけ詰めて、横スクロールを減らす */
 
 /* hand-written hook bubble */
