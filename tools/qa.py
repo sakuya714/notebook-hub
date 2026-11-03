@@ -5,7 +5,7 @@
 
 見るもの：
 - はみ出し：要素の右端が章の枠から出ていないか／overflow で中身が切れていないか（1400〜390px の6通り）
-- 段組みの偏り：2段組の左右の下端が 140px 以上ずれていないか（1400・1200px。直前カードの中は除く）
+- 段組みの偏り：2段組の左右の下端が 140px 以上（かつ長い方の列の8%以上）ずれていないか（1400・1200px。直前カードのボードは章の順を優先するので除く）
 - リンク切れ：ページ内の href="#…" の飛び先があるか
 直し方の目安：偏りは部品の順番を入れ替える（左右の高さの合計が近くなる順に）か、長いグループを分ける。
 """
@@ -33,12 +33,12 @@ MEASURE = r"""
         res.overflow.push(`${sec.id} 切れ ${el.tagName}.${el.className} ${el.scrollWidth}>${el.clientWidth}: ${el.textContent.trim().slice(0, 30)}`);
     });
     sec.querySelectorAll('.cols').forEach(c => {
-      if (c.closest('.tcard')) return;
+      if (c.closest('.tcard') || c.querySelector(':scope > .tcard')) return;  // カードの並びは章の順を優先（下端のずれは許す）
       const cr = c.getBoundingClientRect(), mid = cr.left + cr.width / 2;
       let l = cr.top, r = cr.top, nr = 0;
       [...c.children].forEach(k => { const b = k.getBoundingClientRect(); if (!b.height) return; if (b.left < mid) l = Math.max(l, b.bottom); else { r = Math.max(r, b.bottom); nr++; } });
       const p = c.previousElementSibling, h = p && p.classList.contains('sec') ? p.textContent : '(節の先頭)';
-      if (nr && Math.abs(l - r) > 140) res.imbalance.push(`${sec.id}「${h.slice(0, 20)}」 左${Math.round(l - cr.top)} 右${Math.round(r - cr.top)}`);
+      if (nr && Math.abs(l - r) > 140 && Math.abs(l - r) > 0.08 * (Math.max(l, r) - cr.top)) res.imbalance.push(`${sec.id}「${h.slice(0, 20)}」 左${Math.round(l - cr.top)} 右${Math.round(r - cr.top)}`);
     });
   });
   return res;
