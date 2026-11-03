@@ -202,14 +202,14 @@ table.tb{border-collapse:collapse; width:100%; font-size:var(--fs-0); line-heigh
 .mx .ax{color:var(--ink-3); display:flex; align-items:center; justify-content:center; text-align:center; padding:2px 4px}
 .mx .ax.v{writing-mode:vertical-rl; letter-spacing:.1em}
 .mx .c{background:var(--sheet-3); border-radius:8px; padding:8px 10px; min-height:58px}
-.mx .c b{display:block; font-size:var(--fs-1); color:var(--ink)}
+.mx .c > b{display:block; font-size:var(--fs-1); color:var(--ink)}  /* 見出しだけ1行に。説明の中の太字は行の中のまま */
 .mx .c span{color:var(--ink-2)}
-.mx .c.o b{color:var(--ou-2)}
+.mx .c.o > b{color:var(--ou-2)}
 
 /* ladder (bad → good) */
 .lad{display:flex; flex-direction:column; gap:3px; font-size:var(--fs-0)}
 .lad .r{display:grid; grid-template-columns:8.5em minmax(0,1fr); gap:8px; align-items:baseline; padding:3px 8px; border-radius:6px}
-.lad .r b{font-size:var(--fs-1)}
+.lad .r > b{font-size:var(--fs-1)}
 .lad .r span{color:var(--ink-2)}
 .lad .end{font-size:11px; color:var(--ink-3); letter-spacing:.08em; padding:0 8px}
 

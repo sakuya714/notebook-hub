@@ -53,6 +53,7 @@ notebook-hub/
 ├── hub.py                      … コマンド（build / check / serve / new / mkdir）
 ├── tools/qa.py                 … 見た目のチェック（Playwright で全ノートを撮って調べる）
 ├── tools/cards.py              … 直前カードの漏れチェック（飛び先の節にあってカードに無い用語）
+├── tools/paste.py              … 貼られた解説の漏れチェック（解説の太字の語がカードにあるか。解説はリポジトリの外に置く）
 ├── .private-words              … 公開NGの言葉（自分のMacだけ。公開しない）
 ├── engine/                     … 製本機（全ノート共通）
 │   ├── builder.py              …   notes/ を読んで docs/ に組み立てる
