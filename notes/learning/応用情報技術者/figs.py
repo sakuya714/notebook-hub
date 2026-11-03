@@ -192,6 +192,18 @@ def recovery():
         b += text(X1 + 2, y + 4, act, f"t-s {cls}", "start")
     return svg(420, 172, b, "障害回復のタイムライン")
 
+def star():
+    def box(t, sub, hi=False):
+        st = "background:var(--ou-bg);color:var(--ou-2);border:1px solid var(--ou)" if hi else "background:var(--sheet-3);color:var(--ink)"
+        return (f'<div style="{st};border-radius:8px;padding:6px 8px;font-size:12px;line-height:1.35;text-align:center"><b>{t}</b>'
+                f'<span style="display:block;font-size:11px;color:var(--ink-3)">{sub}</span></div>')
+    e = '<div></div>'
+    return ('<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:center">'
+            + e + box("顧客", "名前・住所") + e
+            + box("商品", "商品名・単価") + box("売上（ファクト）", "いつ・誰が・何を・**何個**・いくら", 1).replace("**何個**", "<b>何個</b>") + box("店舗", "店名・地域")
+            + e + box("日付", "年・月・曜日") + e
+            + '</div>')
+
 # ───────────────────────── 03-3 ─────────────────────────
 def osi():
     rows = [("7 アプリケーション", "HTTP SMTP DNS DHCP", "ゲートウェイ", 0), ("6 プレゼンテーション", "文字コード・圧縮", "↑", 0),
