@@ -261,10 +261,25 @@ svg .hand{font-family:var(--f-hand)}
 .fsheet .fx{margin-bottom:12px}
 .fsheet .fx .src{float:right}
 
+/* 復習カード（@card）：巻末の直前用など。右上の →章 で本文のその節へ飛ぶ */
+.tcard{break-inside:avoid; margin:0 0 14px; padding:11px 14px 3px; border:1px solid var(--rule); border-radius:12px; background:var(--sheet-2)}
+.tcard > .ch{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:7px; padding-bottom:6px; border-bottom:1px dashed var(--rule)}
+.tcard > .ch b{font-size:var(--fs-2); line-height:1.35}
+.tcard > .ch .xr{flex:none}
+.tcard .note{margin:0 0 8px; line-height:1.7; color:var(--ink)}
+.tcard .grp, .tcard .tbw, .tcard .trap, .tcard .hook, .tcard .ol, .tcard .fx{margin-bottom:9px}
+.tcard .ol{padding-left:1.3em; color:var(--ink)}
+.tcard .cols{columns:1; column-rule:0}
+.bb > .tcard, .sh-body > .tcard{max-width:600px}
+
 /* filter modes */
 body.mode-accent .items .k{display:none}
 body.mode-accent .grp:not(:has(.o)){display:none}
-body.mode-accent .note.k, body.mode-accent .tbw.k, body.mode-accent .fx:not(.o), body.mode-accent .hook{display:none}
+body.mode-accent .note.k, body.mode-accent .tbw.k, body.mode-accent .fx:not(.o){display:none}
+/* 直前カードは「応用だけ」でも全部見せる（グレーの行を消すとカードの比較が欠ける） */
+body.mode-accent .tcard .items .k.k{display:revert}
+body.mode-accent .tcard .grp.grp, body.mode-accent .tcard .tbw.k.k{display:block}
+body.mode-accent .tcard .fx.fx{display:block}
 body.mode-fx .sh-body > :not(.fx):not(.cols), body.mode-fx .cols > :not(.fx){display:none}
 body.mode-fx .board:not(#formulas){display:none}
 

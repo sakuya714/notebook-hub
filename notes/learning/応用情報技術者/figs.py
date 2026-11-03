@@ -206,13 +206,23 @@ def star():
 
 # ───────────────────────── 03-3 ─────────────────────────
 def osi():
-    rows = [("7 アプリケーション", "HTTP SMTP DNS DHCP", "ゲートウェイ", 0), ("6 プレゼンテーション", "文字コード・圧縮", "↑", 0),
-            ("5 セッション", "会話の管理", "↑", 0), ("4 トランスポート", "TCP / UDP（ポート番号）", "↑", 0),
-            ("3 ネットワーク", "IP（IPアドレス）・ルーティング", "ルータ・L3SW", 1), ("2 データリンク", "MACアドレス・イーサネット", "ブリッジ・L2SW", 1),
-            ("1 物理", "ケーブル・電気信号", "リピータ・ハブ", 1)]
-    h = '<div class="stack">'
-    for a, b_, c, hi in rows:
-        h += f'<div class="r"><b>{a} <small style="font-weight:400;color:var(--ink-3)">{b_}</small></b><span style="color:{"var(--ou-2)" if hi or c=="ゲートウェイ" else "var(--ink-3)"}">{c}</span></div>'
+    # 層・よく出るプロトコル・中継装置を1枚に。試験に出る 7・4・3・2 層は左にオレンジの線
+    rows = [("7 アプリケーション", "HTTP・SMTP・POP3・IMAP・FTP・DNS・DHCP・SNMP・NTP・SSH", "ゲートウェイ", 1),
+            ("6 プレゼンテーション", "文字コード・圧縮・暗号化（データの形式）", "↑", 0),
+            ("5 セッション", "通信の開始〜終了の管理", "↑", 0),
+            ("4 トランスポート", "TCP・UDP（ポート番号でアプリへ）", "↑", 1),
+            ("3 ネットワーク", "IP・ICMP・ARP・RARP・IPsec・RIP・OSPF・BGP・VRRP（IPアドレスで遠くへ）", "ルータ・L3SW", 1),
+            ("2 データリンク", "イーサネット・PPP・VLAN・STP（MACアドレスで隣へ）", "ブリッジ・L2SW", 1),
+            ("1 物理", "ケーブル・電気信号", "リピータ・ハブ", 0)]
+    h = '<div style="display:flex;flex-direction:column;gap:3px">'
+    for name, protos, dev, hot in rows:
+        bar = "box-shadow:inset 3px 0 0 var(--ou);" if hot else ""
+        dcol = "var(--ink-3)" if dev == "↑" else "var(--ou-2)"
+        h += (f'<div style="display:grid;grid-template-columns:8.2em minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;'
+              f'background:var(--sheet-3);border-radius:6px;padding:5px 10px;{bar}">'
+              f'<b style="font-size:12.5px;color:var(--ink)">{name}</b>'
+              f'<span style="font-size:11.5px;color:var(--ink-2);line-height:1.5">{protos}</span>'
+              f'<span style="font-size:11px;color:{dcol};white-space:nowrap">{dev}</span></div>')
     return h + '</div>'
 
 def handshake():

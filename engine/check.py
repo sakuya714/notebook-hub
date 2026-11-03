@@ -5,11 +5,13 @@
 2. 公開してはいけない情報：メール・電話・学籍番号・APIキー・Mac のパス・.private-words に書いた言葉
    （このサイトは GitHub で公開する。.private-words は公開しない＝.gitignore 済み）
 """
-import os, re, json, glob
+import os, re, json, glob, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from markup import sec_slug, XREF
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BLOCKS = {"map", "stack", "mx", "lad", "html", "flows", "box", "fold", "quiz", "ox", "check", "steps", "stats", "routes", "cover"}
+BLOCKS = {"map", "stack", "mx", "lad", "html", "flows", "box", "card", "fold", "quiz", "ox", "check", "steps", "stats", "routes", "cover"}
 SINGLE = {"part", "ch", "board", "pair", "toc", "formulas", "pairs", "legend", "fig", "fig!", "flow", "end"}
 BOX_TONES = {"why", "exam", "warn", "goal"}
 NOTE_KEYS = {"title", "type", "labels", "macros"}
@@ -75,13 +77,30 @@ def check_note(note_dir, errors, warns):
         with open(f, encoding="utf-8") as fh:
             lines += [(rel(f), i, l.rstrip("\n")) for i, l in enumerate(fh, 1)]
     chapters, figs = set(), set()
+    secs = {}  # 章 → その章の小見出しのアンカー名
+    cur = None
     for f, i, l in lines:
         m = re.match(r"@ch\s+([^|]+)\|", l.strip())
         if m:
             cid = m.group(1).strip()
             if cid in chapters:
                 errors.append(f"{f}:{i}: 章の番号 {cid} が2回ある")
-            chapters.add(cid)
+            chapters.add(cid); cur = cid; secs.setdefault(cid, set())
+        elif re.match(r"@board\s", l.strip()):
+            cur = None
+        elif l.strip().startswith("##") and cur:
+            sl = sec_slug(l.strip()[2:])
+            if sl in secs[cur]:
+                errors.append(f"{f}:{i}: {cur} に同じ小見出し「{sl}」が2つある（リンク先が決まらない）")
+            secs[cur].add(sl)
+
+    def check_link(f, i, spec):
+        cid, _, h = spec.partition("#")
+        cid = cid.strip()
+        if cid not in chapters:
+            errors.append(f"{f}:{i}: {{{{{spec}}}}} の章がない")
+        elif h.strip() and sec_slug(h) not in secs.get(cid, set()):
+            errors.append(f"{f}:{i}: {{{{{spec}}}}}：{cid} に小見出し「{sec_slug(h)}」がない")
     if os.path.exists(os.path.join(note_dir, "figs.py")):
         with open(os.path.join(note_dir, "figs.py"), encoding="utf-8") as fh:
             figs = set(re.findall(r"^def ([A-Za-z]\w*)\(", fh.read(), re.M))
@@ -118,9 +137,10 @@ def check_note(note_dir, errors, warns):
                 cid = (s[6:].split("|") + [""] * 5)[4].strip()
                 if cid and cid not in chapters:
                     errors.append(f"{f}:{i}: @pair の章 {cid} がない")
-        for cid in re.findall(r"\{\{([\w.-]+)\}\}", s):
-            if cid not in chapters:
-                errors.append(f"{f}:{i}: {{{{{cid}}}}} の章がない")
+        for spec in XREF.findall(s):
+            check_link(f, i, spec)
+        if re.match(r"@card\b", s) and "|" in s:
+            check_link(f, i, s.split("|", 1)[1].strip())
         if opened and opened[-1][2] == "routes" and not s.startswith("@"):
             for st in (s.split("|") + ["", "", ""])[2].split(","):
                 cid = st.strip().split(" ")[0]

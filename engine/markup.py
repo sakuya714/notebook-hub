@@ -22,6 +22,21 @@ class Ctx:
         self.boards = []     # (id, chip)  上部バーに出す見出し
         self.uses = set()    # 使った部品（凡例・フィルタ・数式の読み込みに使う）
 
+# ───────────── 節のアンカー ─────────────
+def sec_slug(text):
+    """見出し → アンカー用の名前。「（」より前だけを使い、空白は - にする（{{03-3#LANの送り方}} で飛べる）"""
+    t = re.split(r"[（(]", text, 1)[0]
+    t = re.sub(r"\*\*|==|`|\{\{[^}]*\}\}", "", t).strip()
+    return re.sub(r"\s+", "-", t)
+
+def link_href(spec):
+    """「03-3」→ 章へ、「03-3#LANの送り方」→ その章の節へ"""
+    cid, _, h = spec.partition("#")
+    cid = cid.strip()
+    return "#c-" + cid + ("-" + sec_slug(h) if h.strip() else ""), cid
+
+XREF = re.compile(r"\{\{([\w.-]+(?:#[^{}]+?)?)\}\}")
+
 # ───────────── 文中の記法 ─────────────
 MATH_INLINE = re.compile(r"(?<![\\$])\$(?!\$)(.+?)(?<!\\)\$")
 
@@ -34,7 +49,10 @@ def inline(s, ctx=None):
     s = esc(s)
     if ctx is not None and "{{" in s:
         ctx.uses.add("xref")
-    s = re.sub(r"\{\{([\w.-]+)\}\}", lambda m: f'<a class="xr" href="#c-{m.group(1)}">→{m.group(1)}</a>', s)
+    def xref(m):
+        href, cid = link_href(html.unescape(m.group(1)))
+        return f'<a class="xr" href="{attr(href)}">→{esc(cid)}</a>'
+    s = XREF.sub(xref, s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"==(.+?)==", r'<span class="hl">\1</span>', s)
     s = re.sub(r"`(.+?)`", r"<code>\1</code>", s)
@@ -90,6 +108,7 @@ class Builder:
         self.list = None        # 1. 番号付きリスト
         self.container = None   # "sheet" / "board" / None（表紙）
         self.ch = None
+        self.anchor = "top"     # 小見出しのアンカーの前置き（章なら c-03-3、ボードならその id）
 
     # ── 小さい部品を閉じる ──
     def add(self, kind, h):
@@ -140,14 +159,14 @@ class Builder:
         """dense が3つ以上続いた所だけ2段組にする。文章・数式・図は1段のまま"""
         res, run = [], []
         def close_run():
-            if len(run) >= 3:
+            if len(run) >= 3 or (len(run) >= 2 and all(h.startswith('<div class="tcard"') for h in run)):
                 res.append('<div class="cols">' + "".join(run) + "</div>")
             else:
                 res.extend(run)
             run.clear()
         for kind, h in self.blocks:
             # 小見出しは段組みの区切り。段組みの中に混ぜると、見出しと中身が別の列に流れて離れる
-            if kind == DENSE and not h.startswith('<div class="sec">'):
+            if kind == DENSE and not h.startswith('<div class="sec"'):
                 run.append(h)
             else:
                 close_run(); res.append(h)
@@ -171,6 +190,7 @@ class Builder:
     def sub(self, lines):
         b = Builder(self.ctx, nested=True)
         b.ch = self.ch
+        b.anchor = self.anchor
         for l in lines:
             b.line(l)
         return b.html()
@@ -220,6 +240,14 @@ class Builder:
             self.add(DENSE, figs.fig("".join(flow_html(l, ctx) for l in lines if l.strip()), inline(title, ctx), inline(extra, ctx) if extra else ""))
         elif kind == "html":
             self.add(WIDE, "\n".join(lines))
+        elif kind == "card":
+            # @card テーマ | 03-3#LANの送り方 … @end ：巻末の直前カードなど。中は他の記法がそのまま書ける
+            link = ""
+            if extra:
+                href, cid = link_href(extra)
+                link = f'<a class="xr" href="{attr(href)}">→{esc(cid)}</a>'
+                ctx.uses.add("xref")
+            self.add(DENSE, f'<div class="tcard"><div class="ch"><b>{inline(title, ctx)}</b>{link}</div>{self.sub(lines)}</div>')
         elif kind == "box":
             # @box why|exam|warn|goal 見出し
             tone, _, label = title.partition(" ")
@@ -299,7 +327,7 @@ class Builder:
             return
         # @xxx … @end（入れ子に対応）
         if self.block is not None:
-            if re.match(r"@(box|fold|quiz|ox|check|steps|stack|lad|mx|flows|html|map|stats|routes|cover)\b", s):
+            if re.match(r"@(box|card|fold|quiz|ox|check|steps|stack|lad|mx|flows|html|map|stats|routes|cover)\b", s):
                 self.depth += 1
             if s == "@end":
                 if self.depth == 0:
@@ -363,6 +391,7 @@ class Builder:
             self.close_container()
             cid, title, sub = split_bar(s[3:], 3)
             self.ch = cid
+            self.anchor = f"c-{cid}"
             self.ctx.chapters[cid] = title
             if not self.ctx.parts:
                 self.ctx.parts.append(("", "", "", "", []))
@@ -374,6 +403,7 @@ class Builder:
         if re.match(r"@board\s", s):
             self.close_container()
             bid, title, sub, chip = split_bar(s[6:], 4)
+            self.anchor = bid
             if chip:
                 self.ctx.boards.append((bid, chip))
             bsub = f'<div class="bsub">{inline(sub, self.ctx)}</div>' if sub else ""
@@ -388,7 +418,7 @@ class Builder:
             if s == tag:
                 self.flush_all(); self.add(WIDE, f"\x01{tag[1:]}\x01")  # 全部読み終わってから中身を入れる
                 return
-        m = re.match(r"@(map|stack|mx|lad|html|flows|box|fold|quiz|ox|check|steps|stats|routes|cover)\b\s*(.*)", s)
+        m = re.match(r"@(map|stack|mx|lad|html|flows|box|card|fold|quiz|ox|check|steps|stats|routes|cover)\b\s*(.*)", s)
         if m:
             self.flush_all()
             self.block = (m.group(1), m.group(2), [])
@@ -417,7 +447,9 @@ class Builder:
             return
         if s.startswith("##"):
             self.flush_all()
-            self.add(DENSE, f'<div class="sec">{inline(s[2:].strip(), self.ctx)}</div>')
+            text = s[2:].strip()
+            sid = f"{self.anchor}-{sec_slug(text)}"
+            self.add(DENSE, f'<div class="sec" id="{attr(sid)}">{inline(text, self.ctx)}</div>')
             return
         if s == ")":
             self.flush_items(); return
