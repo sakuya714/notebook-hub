@@ -394,6 +394,21 @@ def breakeven():
     return svg(360, 178, b, "損益分岐点")
 
 # ───────────────────────── 06-3 ─────────────────────────
+def ipr():
+    def box(t, sub, hi=False):
+        bg = "background:var(--ou-bg);color:var(--ou-2)" if hi else "background:var(--sheet-3);color:var(--ink)"
+        return (f'<div style="{bg};border-radius:6px;padding:5px 8px;font-size:12px;line-height:1.35"><b>{t}</b>'
+                f'<span style="display:block;font-size:11px;color:var(--ink-3)">{sub}</span></div>')
+    def col(head, note, items):
+        return (f'<div style="display:flex;flex-direction:column;gap:4px;min-width:0">'
+                f'<div style="font-size:12px;font-weight:700;color:var(--ink)">{head}</div>'
+                f'<div style="font-size:11px;color:var(--ink-3);margin:-3px 0 2px">{note}</div>{"".join(items)}</div>')
+    return ('<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'
+            + col("産業財産権", "特許庁に出願・登録が必要", [box("特許権", "発明", 1), box("実用新案権", "考案（形・構造）", 1), box("意匠権", "デザイン", 1), box("商標権", "ロゴ・名前", 1)])
+            + col("著作権", "登録不要。作った瞬間に発生", [box("著作権", "表現（文章・音楽・プログラム）")])
+            + col("その他", "登録の要らないものも", [box("営業秘密", "不正競争防止法"), box("回路配置利用権", "半導体の回路"), box("育成者権", "植物の新品種")])
+            + '</div>')
+
 def contracts():
     b = arrow_defs("ct")
     def bx(x, y, s, cls="f-sheet3"):
