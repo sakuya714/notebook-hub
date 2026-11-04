@@ -8,7 +8,7 @@
 """
 import os, re, json, glob, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from markup import sec_slug, XREF
+from markup import sec_slug, XREF, split_note
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -67,6 +67,32 @@ def scan_separation(note_dir, errors):
                     if re.search(pat, line):
                         errors.append(f"{rel(f)}:{i}: ノート側に見た目の指定（{what}）がある。theme/blocks.css のクラスか engine/figkit.py の部品を使う")
 
+def read_lines(note_dir):
+    lines = []
+    for f in sorted(glob.glob(os.path.join(note_dir, "content", "*.txt"))):
+        with open(f, encoding="utf-8") as fh:
+            lines += [(rel(f), i, l.rstrip("\n")) for i, l in enumerate(fh, 1)]
+    return lines
+
+def collect_secs(lines, errors):
+    """章の番号と、章ごとの小見出しのアンカー名を集める"""
+    chapters, secs, cur = set(), {}, None
+    for f, i, l in lines:
+        m = re.match(r"@ch\s+([^|]+)\|", l.strip())
+        if m:
+            cid = m.group(1).strip()
+            if cid in chapters:
+                errors.append(f"{f}:{i}: 章の番号 {cid} が2回ある")
+            chapters.add(cid); cur = cid; secs.setdefault(cid, set())
+        elif re.match(r"@board\s", l.strip()):
+            cur = None
+        elif l.strip().startswith("##") and cur:
+            sl = sec_slug(l.strip()[2:])
+            if sl in secs[cur]:
+                errors.append(f"{f}:{i}: {cur} に同じ小見出し「{sl}」が2つある（リンク先が決まらない）")
+            secs[cur].add(sl)
+    return chapters, secs
+
 def check_note(note_dir, errors, warns):
     name = rel(note_dir)
     try:
@@ -83,35 +109,27 @@ def check_note(note_dir, errors, warns):
     files = sorted(glob.glob(os.path.join(note_dir, "content", "*.txt")))
     if not files:
         errors.append(f"{name}: content/*.txt がない"); return
-    lines = []
-    for f in files:
-        with open(f, encoding="utf-8") as fh:
-            lines += [(rel(f), i, l.rstrip("\n")) for i, l in enumerate(fh, 1)]
-    chapters, figs = set(), set()
-    secs = {}  # 章 → その章の小見出しのアンカー名
-    cur = None
-    for f, i, l in lines:
-        m = re.match(r"@ch\s+([^|]+)\|", l.strip())
-        if m:
-            cid = m.group(1).strip()
-            if cid in chapters:
-                errors.append(f"{f}:{i}: 章の番号 {cid} が2回ある")
-            chapters.add(cid); cur = cid; secs.setdefault(cid, set())
-        elif re.match(r"@board\s", l.strip()):
-            cur = None
-        elif l.strip().startswith("##") and cur:
-            sl = sec_slug(l.strip()[2:])
-            if sl in secs[cur]:
-                errors.append(f"{f}:{i}: {cur} に同じ小見出し「{sl}」が2つある（リンク先が決まらない）")
-            secs[cur].add(sl)
+    lines = read_lines(note_dir)
+    figs = set()
+    chapters, secs = collect_secs(lines, errors)
 
     def check_link(f, i, spec):
-        cid, _, h = spec.partition("#")
+        note, rest = split_note(spec)
+        chs, ss, out = chapters, secs, errors
+        if note:
+            # 別のノートへのリンク：そのノートの章・小見出しで確かめる。
+            # 相手のノートの書き直しでこちらのビルドが止まらないよう、ずれは「注意」にする（飛び先はページの先頭になる）
+            out = warns
+            other = os.path.join(ROOT, "notes", note)
+            if not glob.glob(os.path.join(other, "content", "*.txt")):
+                warns.append(f"{f}:{i}: {{{{{spec}}}}} のノート notes/{note} がない"); return
+            chs, ss = collect_secs(read_lines(other), [])
+        cid, _, h = rest.partition("#")
         cid = cid.strip()
-        if cid not in chapters:
-            errors.append(f"{f}:{i}: {{{{{spec}}}}} の章がない")
-        elif h.strip() and sec_slug(h) not in secs.get(cid, set()):
-            errors.append(f"{f}:{i}: {{{{{spec}}}}}：{cid} に小見出し「{sec_slug(h)}」がない")
+        if cid not in chs:
+            out.append(f"{f}:{i}: {{{{{spec}}}}} の章がない")
+        elif h.strip() and sec_slug(h) not in ss.get(cid, set()):
+            out.append(f"{f}:{i}: {{{{{spec}}}}}：{cid} に小見出し「{sec_slug(h)}」がない")
     if os.path.exists(os.path.join(note_dir, "figs.py")):
         with open(os.path.join(note_dir, "figs.py"), encoding="utf-8") as fh:
             figs = set(re.findall(r"^def ([A-Za-z]\w*)\(", fh.read(), re.M))

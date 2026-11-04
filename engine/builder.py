@@ -105,6 +105,7 @@ def build_note(node, tpl):
     if cfg.get("type") not in TYPES:
         raise SystemExit(f"{node['path']}/note.json: \"type\" に 整理型 か 理解型 を書いてください")
     ctx = Ctx(load_figs(src))
+    ctx.root = "../" * (node["path"].count("/") + 1)  # 別のノートへのリンク用
     b = Builder(ctx)
     files = sorted(glob.glob(os.path.join(src, "content", "*.txt")), key=lambda f: natural(os.path.basename(f)))
     if not files:

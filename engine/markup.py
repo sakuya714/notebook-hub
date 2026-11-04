@@ -21,6 +21,7 @@ class Ctx:
         self.pairs = []      # (group, a, b, how, ch_id)
         self.boards = []     # (id, chip)  上部バーに出す見出し
         self.uses = set()    # 使った部品（凡例・フィルタ・数式の読み込みに使う）
+        self.root = ""       # このページからサイトの一番上への相対パス（別のノートへのリンクに使う）
 
 # ───────────── 節のアンカー ─────────────
 def sec_slug(text):
@@ -29,13 +30,24 @@ def sec_slug(text):
     t = re.sub(r"\*\*|==|`|\{\{[^}]*\}\}", "", t).strip()
     return re.sub(r"\s+", "-", t)
 
-def link_href(spec):
-    """「03-3」→ 章へ、「03-3#LANの送り方」→ その章の節へ"""
+def split_note(spec):
+    """「learning/ノート名:03-3#節」→（"learning/ノート名", "03-3#節"）。ノート名が無ければ（"", spec）"""
+    head = spec.split("#", 1)[0]
+    if ":" in head:
+        note, _, rest = spec.partition(":")
+        return note.strip().strip("/"), rest
+    return "", spec
+
+def link_href(spec, ctx=None):
+    """「03-3」→ 章へ、「03-3#LANの送り方」→ その章の節へ。
+    「learning/ノート名:03-3#節」→ 別のノートのその節へ（ノートの場所は notes/ からの道のり）"""
+    note, spec = split_note(spec)
     cid, _, h = spec.partition("#")
     cid = cid.strip()
-    return "#c-" + cid + ("-" + sec_slug(h) if h.strip() else ""), cid
+    base = ((ctx.root if ctx is not None else "") + note + "/") if note else ""
+    return base + "#c-" + cid + ("-" + sec_slug(h) if h.strip() else ""), cid
 
-XREF = re.compile(r"\{\{([\w.-]+(?:#[^{}]+?)?)\}\}")
+XREF = re.compile(r"\{\{((?:[\w./-]+:)?[\w.-]+(?:#[^{}]+?)?)\}\}")
 
 # ───────────── 文中の記法 ─────────────
 MATH_INLINE = re.compile(r"(?<![\\$])\$(?!\$)(.+?)(?<!\\)\$")
@@ -50,7 +62,7 @@ def inline(s, ctx=None):
     if ctx is not None and "{{" in s:
         ctx.uses.add("xref")
     def xref(m):
-        href, cid = link_href(html.unescape(m.group(1)))
+        href, cid = link_href(html.unescape(m.group(1)), ctx)
         return f'<a class="xr" href="{attr(href)}">→{esc(cid)}</a>'
     s = XREF.sub(xref, s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
@@ -244,7 +256,7 @@ class Builder:
             # @card テーマ | 03-3#LANの送り方 … @end ：巻末の直前カードなど。中は他の記法がそのまま書ける
             link = ""
             if extra:
-                href, cid = link_href(extra)
+                href, cid = link_href(extra, ctx)
                 link = f'<a class="xr" href="{attr(href)}">→{esc(cid)}</a>'
                 ctx.uses.add("xref")
             self.add(DENSE, f'<div class="tcard"><div class="ch"><b>{inline(title, ctx)}</b>{link}</div>{self.sub(lines)}</div>')
