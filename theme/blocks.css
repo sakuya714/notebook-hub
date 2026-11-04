@@ -278,6 +278,15 @@ svg text{font-family:var(--f-body)}
 .fk-v .r{display:grid; grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr); align-items:center; gap:6px; font-size:12px}
 .fk-v .r.l1{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding:0 4%} .fk-v .r.l2{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr); padding:0 8%}
 .fk-v .r.l3{grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr); padding:0 12%} .fk-v .r.l4{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr); padding:0 16%}
+.fk-tree, .fk-tree ul{list-style:none; margin:0; padding:0}
+.fk-tree ul{padding-left:12px}
+.fk-tree ul > li{position:relative; padding:4px 0 0 18px}
+.fk-tree ul > li::before{content:""; position:absolute; left:0; top:0; width:13px; height:16px; border-left:1.5px solid var(--line); border-bottom:1.5px solid var(--line); border-bottom-left-radius:6px}
+.fk-tree ul > li:not(:last-child)::after{content:""; position:absolute; left:0; top:14px; bottom:0; border-left:1.5px solid var(--line)}
+.fk-tree .nd{display:inline-flex; flex-wrap:wrap; align-items:baseline; gap:0 8px; max-width:100%; background:var(--sheet-3); border-radius:6px; padding:3px 9px; font-size:12px; line-height:1.45}
+.fk-tree .nd b{font-weight:700; color:var(--ink)}
+.fk-tree .nd span{font-size:11px; color:var(--ink-3)}
+.fk-tree .nd.o{background:var(--ou-bg)} .fk-tree .nd.o b{color:var(--ou-2)}
 .fk-v .r.l5{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr); padding:0 20%}
 .fk-v .r span:first-child{text-align:right; color:var(--ink-2)} .fk-v .r span:last-child{color:var(--ou-2)} .fk-v .r.k span:last-child{color:var(--ink-3)}
 .fk-v .r .ln{border-top:1.5px dashed var(--line); height:0}

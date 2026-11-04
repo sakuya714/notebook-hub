@@ -7,7 +7,7 @@
 import math  # noqa: F401  figs.py から使えるように
 
 __all__ = ["math", "svg", "text", "path", "arrow_defs", "fig",
-           "tile", "blank", "grid", "stack", "column", "columns", "rows", "ends", "mono", "bits", "cellcol", "hrow", "chain", "vpairs", "timing"]
+           "tile", "blank", "grid", "stack", "column", "columns", "rows", "ends", "mono", "bits", "cellcol", "hrow", "chain", "vpairs", "timing", "tree"]
 
 def svg(w, h, body, label=""):
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{label}" xmlns="http://www.w3.org/2000/svg">{body}</svg>'
@@ -121,3 +121,12 @@ def timing(row_labels, n_cols, spans, hot_row=0):
 def stack(items):
     """本文の @stack と同じ見た目の段：(見出し, 右の補足, アクセントの線)"""
     return '<div class="stack">' + "".join(f'<div class="r{" o" if hot else ""}"><b>{a}</b><span>{b}</span></div>' for a, b, hot in items) + "</div>"
+
+def tree(node):
+    """木（家系図・分類・故障の木）：node＝(名前, 説明, アクセントか, [子の node…])。上から下へ字下げして線でつなぐ。狭い画面では説明が折り返すだけ"""
+    def li(n):
+        name, desc, hot, kids = n
+        d = f"<span>{desc}</span>" if desc else ""
+        sub = f'<ul>{"".join(li(k) for k in kids)}</ul>' if kids else ""
+        return f'<li><div class="nd{" o" if hot else ""}"><b>{name}</b>{d}</div>{sub}</li>'
+    return f'<ul class="fk-tree">{li(node)}</ul>'
