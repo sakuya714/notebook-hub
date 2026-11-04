@@ -22,6 +22,7 @@ class Ctx:
         self.boards = []     # (id, chip)  上部バーに出す見出し
         self.uses = set()    # 使った部品（凡例・フィルタ・数式の読み込みに使う）
         self.root = ""       # このページからサイトの一番上への相対パス（別のノートへのリンクに使う）
+        self.card_ids = set()  # カードの id（検索の結果からカード1枚に飛ぶため）
 
 # ───────────── 節のアンカー ─────────────
 def sec_slug(text):
@@ -259,7 +260,12 @@ class Builder:
                 href, cid = link_href(extra, ctx)
                 link = f'<a class="xr" href="{attr(href)}">→{esc(cid)}</a>'
                 ctx.uses.add("xref")
-            self.add(DENSE, f'<div class="tcard"><div class="ch"><b>{inline(title, ctx)}</b>{link}</div>{self.sub(lines)}</div>')
+            kid = base = "k-" + sec_slug(title)  # カードの id ＝ テーマ名の「（」より前。同じ名前が2枚あれば -2 を付ける
+            n = 2
+            while kid in ctx.card_ids:
+                kid = f"{base}-{n}"; n += 1
+            ctx.card_ids.add(kid)
+            self.add(DENSE, f'<div class="tcard" id="{attr(kid)}"><div class="ch"><b>{inline(title, ctx)}</b>{link}</div>{self.sub(lines)}</div>')
         elif kind == "box":
             # @box why|exam|warn|goal 見出し
             tone, _, label = title.partition(" ")

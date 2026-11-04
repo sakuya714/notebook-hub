@@ -77,9 +77,9 @@ def toc_html(ctx):
     return f'<div class="pgrid">{pg}</div>'
 
 def formulas_html(ctx):
-    fs = "".join(f'<div class="fx{" o" if ou else ""}"><div class="fl">{esc(lab) if lab else "公式"} '
+    fs = "".join(f'<div class="fx{" o" if ou else ""}" id="fx-{i}"><div class="fl">{esc(lab) if lab else "公式"} '
                  f'<a class="xr src" href="#c-{attr(ch or "")}">{esc(ch or "")}</a></div><div class="fxb">{"".join(f'<span class="fxl">{inline(l)}</span>' for l in lines)}</div></div>'
-                 for ch, lab, lines, ou in ctx.formulas)
+                 for i, (ch, lab, lines, ou) in enumerate(ctx.formulas, 1))
     return f'<div class="fsheet">{fs}</div>'
 
 def chip(ch):
@@ -89,11 +89,14 @@ def pairs_html(ctx):
     groups = {}
     for g, a, b, how, ch in ctx.pairs:
         groups.setdefault(g, []).append((a, b, how, ch))
-    out = ""
+    out, n = "", 0
     for g, rows in groups.items():
-        trs = "".join(f'<tr><td>{inline(a)}</td><td>{inline(b)}</td><td>{inline(how)}</td>'
-                      f'<td>{chip(ch)}</td></tr>' for a, b, how, ch in rows)
-        head = f'<div class="sec">{esc(g)}</div>' if g else ""
+        trs = ""
+        for a, b, how, ch in rows:  # 1組ずつ id を付ける（検索の結果からその行に飛ぶため）
+            n += 1
+            trs += (f'<tr id="pair-{n}"><td>{inline(a)}</td><td>{inline(b)}</td><td>{inline(how)}</td>'
+                    f'<td>{chip(ch)}</td></tr>')
+        head = f'<div class="sec" id="pairs-{attr(g)}">{esc(g)}</div>' if g else ""
         out += f'{head}<div class="tbw"><table class="tb pairs"><thead><tr><th>A</th><th>B</th><th>見分け方（A ／ B）</th><th></th></tr></thead><tbody>{trs}</tbody></table></div>'
     return out
 

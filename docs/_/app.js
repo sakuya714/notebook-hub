@@ -97,13 +97,13 @@
       let hits = secs.filter((x) => toks.every((t) => x.low.includes(t)));
       if (!hits.length) hits = secs.filter((x) => toks.some((t) => x.low.includes(t)));
       const cnt = secs.reduce((a, x) => a + toks.reduce((b, t) => b + x.low.split(t).length - 1, 0), 0);
-      res.push({ n, nameHit: toks.every((t) => name.includes(t)), cnt, hits: hits.slice(0, 4) });
+      res.push({ n, nameHit: toks.every((t) => name.includes(t)), cnt, hits }); // 見つかった所は全部出す（節・カード・ペア・公式ごとに1行）
     });
     res.sort((a, b) => (b.nameHit - a.nameHit) || (b.cnt - a.cnt));
     if (!res.length) { $("nav").innerHTML = `<div class="empty-msg">「${esc(q)}」は見つかりません</div>`; return; }
     const qs = "?q=" + encodeURIComponent(q);
     $("nav").innerHTML = `<div class="res-h">${res.length} 冊に見つかった${index ? "" : "（本文を読み込み中…）"}</div>` + res.map((r) =>
-      `<div class="res"><a class="item${HUB.path === r.n.path ? " on" : ""}" href="${esc(href(r.n.path, qs))}"><i class="dt"></i><span class="nm">${esc(r.n.name)}</span><span class="cnt">${r.cnt ? r.cnt + "件" : ""}</span></a>` +
+      `<div class="res"><a class="item${HUB.path === r.n.path ? " on" : ""}" href="${esc(href(r.n.path, qs))}"><i class="dt"></i><span class="nm">${esc(r.n.name)}</span><span class="cnt">${r.hits.length ? r.hits.length + "か所" : ""}</span></a>` +
       r.hits.map((x) => `<a class="hit" href="${esc(href(r.n.path, qs + "#" + encodeURIComponent(x.id)))}"><span class="hl2">${esc(x.label)}</span><span class="sn">${snippet(x.body, toks)}</span></a>`).join("") + "</div>"
     ).join("");
   }
@@ -129,9 +129,16 @@
     marks = [];
     if (!query) return;
     const toks = norm(query).split(/\s+/).filter(Boolean);
-    const scope = (id && document.getElementById(id)) || document.querySelector("main");
+    const el = id && document.getElementById(id);
+    let scope = el || document.querySelector("main"), range = null;
+    if (el && el.classList.contains("sec")) { // 節の見出しなら、次の見出しまでを探す範囲にする
+      scope = el.parentNode; range = document.createRange(); range.setStartBefore(el);
+      let nx = el.nextElementSibling;
+      while (nx && !nx.classList.contains("sec")) nx = nx.nextElementSibling;
+      if (nx) range.setEndBefore(nx); else range.setEndAfter(scope.lastChild);
+    }
     const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
-      acceptNode: (n) => (n.parentElement && !n.parentElement.closest("script,style,svg,mjx-container") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
+      acceptNode: (n) => (n.parentElement && !n.parentElement.closest("script,style,svg,mjx-container") && (!range || range.intersectsNode(n)) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
     });
     const hits = [];
     let n;
